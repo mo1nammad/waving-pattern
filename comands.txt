@@ -1,0 +1,2 @@
+docker build -t {image-name} .
+docker run -p 5173:5173 {image-name}
