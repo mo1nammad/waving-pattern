@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
+import testVertexShader from "./shaders/test/vertex.glsl";
+import testFragmentShader from "./shaders/test/fragment.glsl";
+import gptFragmentShader from "./shaders/gpt/fragment.glsl";
 // scene
 const scene = new THREE.Scene();
 
@@ -15,10 +18,11 @@ const camera = new THREE.PerspectiveCamera(
   0.05,
   100
 );
-camera.position.set(0, 1, 3);
+camera.position.set(0, 1, 2);
 
 // renderer
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({});
+renderer.shadowMap.enabled;
 renderer.setSize(Sizes.width, Sizes.height);
 document.body.appendChild(renderer.domElement);
 
@@ -27,15 +31,20 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
 controls.enableDamping = true;
 
-const ambientLight = new THREE.AmbientLight("#86cdff", 0.6);
-scene.add(ambientLight);
+const planeGeometry = new THREE.PlaneGeometry(1, 1, 32, 32);
 
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshStandardMaterial()
-);
-scene.add(cube);
+const material = new THREE.ShaderMaterial({
+  vertexShader: testVertexShader,
+  fragmentShader: testFragmentShader,
+  uniforms: {
+    elapsedTime: { value: 0 },
+  },
+  side: THREE.DoubleSide,
+});
 
+const planeMesh = new THREE.Mesh(planeGeometry, material);
+
+scene.add(planeMesh);
 window.addEventListener("resize", () => {
   Sizes.width = window.innerWidth;
   Sizes.height = window.innerHeight;
@@ -47,7 +56,12 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
+const clock = new THREE.Clock();
+
 function animate() {
+  const elapsedTime = clock.getElapsedTime();
+  material.uniforms.elapsedTime.value = elapsedTime;
+
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
