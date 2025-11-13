@@ -1,9 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import testVertexShader from "./shaders/test/vertex.glsl";
-import testFragmentShader from "./shaders/test/fragment.glsl";
-import gptFragmentShader from "./shaders/gpt/fragment.glsl";
+import { gui } from "./utils/gui.js";
+
 // scene
 const scene = new THREE.Scene();
 
@@ -18,7 +17,7 @@ const camera = new THREE.PerspectiveCamera(
   0.05,
   100
 );
-camera.position.set(0, 1, 2);
+camera.position.set(0, 5, 0);
 
 // renderer
 const renderer = new THREE.WebGLRenderer({});
@@ -31,20 +30,9 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
 controls.enableDamping = true;
 
-const planeGeometry = new THREE.PlaneGeometry(1, 1, 32, 32);
-
-const material = new THREE.ShaderMaterial({
-  vertexShader: testVertexShader,
-  fragmentShader: testFragmentShader,
-  uniforms: {
-    elapsedTime: { value: 0 },
-  },
-  side: THREE.DoubleSide,
-});
-
-const planeMesh = new THREE.Mesh(planeGeometry, material);
-
+import { planeMesh } from "./meshs/water.js";
 scene.add(planeMesh);
+
 window.addEventListener("resize", () => {
   Sizes.width = window.innerWidth;
   Sizes.height = window.innerHeight;
@@ -60,7 +48,7 @@ const clock = new THREE.Clock();
 
 function animate() {
   const elapsedTime = clock.getElapsedTime();
-  material.uniforms.elapsedTime.value = elapsedTime;
+  planeMesh.material.uniforms.time.value = elapsedTime;
 
   controls.update();
   renderer.render(scene, camera);
